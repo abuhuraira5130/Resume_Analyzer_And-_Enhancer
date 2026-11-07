@@ -1,450 +1,181 @@
-# Resume Analyzer Monorepo
+<div align="center">
 
-A full-stack resume analysis web app.
+# 🚀 CareerForge AI — Resume Analyzer
 
-- **Frontend:** React + Vite (TanStack/React Start-style server functions)
-- **Backend:** Django + Django REST Framework
-- **Data/Auth/Storage:** Supabase (Postgres + Auth + Storage)
-
-The backend parses an uploaded resume (PDF/DOCX/text), extracts skills/experience/education, then generates:
-- a **job-targeted resume analysis** (scores, gaps, quick wins, salary range, cover letter drafts)
-- an **interview question set**
-- an **interview evaluation** summary (based on similarity + answer length/structure heuristics)
-
----
-
-## Project Structure
-
-```text
-Resume_Analyzer-main/
-  backend/                  # Django REST API + scoring logic
-    api/                     # request handlers and ML/heuristic services
-      views.py               # API endpoints
-      urls.py                # route mapping
-      services.py           # resume parsing + scoring + interview logic
-    config/                  # Django settings, wsgi/asgi
-    manage.py
-    requirements.txt
-    scripts/
-      test_api.py           # quick local integration test (delete resume)
-
-  frontend/                 # Browser UI
-    src/
-      serverFns/            # TanStack server functions calling backend endpoints
-      lib/
-        backend.ts          # fetch wrapper for backendPost()
-
-  docs/
-  Resume_Analyzer_Proposal_short.md
-```
-
----
-
-## What is happening in this project (end-to-end flow)
-
-### 1) User authenticates (Supabase Auth)
-Frontend uses Supabase to get a user JWT. Every backend call includes:
-- `accessToken`: the user JWT
-
-The backend verifies the JWT by calling Supabase **`/auth/v1/user`** before allowing DB/storage operations.
-
-### 2) User uploads a resume (Supabase Storage)
-Upload handling is primarily managed by the Supabase-backed frontend flow; the backend assumes a row exists in the `resumes` table with a `file_path` pointing to a Storage object.
-
-### 3) Backend parses the resume (PDF/DOCX/text → extracted signals)
-When the frontend calls:
-- `POST /api/resumes/parse/`
-
-Backend:
-- downloads the resume file from Supabase Storage
-- extracts text:
-  - **PDF:** `pypdf.PdfReader`
-  - **DOCX:** `python-docx`
-  - otherwise: UTF-8 decode fallback
-- computes:
-  - `extracted_skills` (regex match against a large COMMON_SKILLS list)
-  - `total_experience_years` (regex for "X years" / graduation years)
-  - `education_level` (regex for PhD/Master’s/Bachelor’s/etc.)
-  - `word_count`
-  - `is_ats_friendly` (heuristic: contains contact + section keywords + reasonable length)
-- updates the `resumes` row with the parsing results and marks `parse_status` as `completed`
-
-### 4) User creates an “analysis” for a target job
-When the frontend calls:
-- `POST /api/analyses/create/`
-
-Backend:
-- verifies the resume is already parsed (`parse_status == completed` and `raw_text` exists)
-- inserts a new `analyses` row with `status=processing`
-- runs the scoring pipeline in `api/services.py` to generate:
-  - ATS/keyword match signals
-  - skill match score, experience score, education score, culture fit score
-  - interview probability + grade
-  - salary estimate range
-  - matched/missing keywords
-  - skill gaps, learning roadmap, quick wins
-  - cover letter drafts (professional/conversational/creative)
-- updates the `analyses` row to `status=completed` with all computed fields
-
-### 5) User starts an interview session
-When the frontend calls:
-- `POST /api/interview/start/`
-
-Backend:
-- verifies resume parse completion
-- pulls `extracted_skills` from the resume
-- generates N questions using `build_questions()`:
-  - **technical / behavioral / system_design** categories
-  - question text template substitution using extracted skills
-- inserts an `interview_sessions` row with:
-  - generated `questions`
-  - `answers=[]`
-  - `status=in_progress`
-
-### 6) User answers questions → backend evaluates answers
-When the frontend calls:
-- `POST /api/interview/evaluate/`
-
-Backend:
-- evaluates the submitted answer using `evaluate_answer()`:
-  - similarity via TF-IDF cosine similarity between question text and user answer
-  - length/structure heuristics (presence of STAR-like tokens)
-  - language prefix for messages (“English” vs “Urdu”)
-- updates the `interview_sessions.answers` array
-
-### 7) User finishes interview → backend summarizes
-When the frontend calls:
-- `POST /api/interview/finish/`
-
-Backend:
-- reads stored answers + questions
-- summarizes into:
-  - overall score + grade
-  - performance breakdown (technical/communication/problem_solving/culture_fit)
-  - strengths and improvements
-- updates the interview session to `status=completed` and returns the summary
-
----
-
-## Backend details (Django + REST API)
-
-### API endpoints
-Base path is mapped in `backend/api/urls.py`:
-
-- `GET  /api/health/`
-- `POST /api/resumes/parse/`
-- `POST /api/resumes/delete/`
-- `POST /api/resumes/set-primary/`
-- `POST /api/analyses/create/`
-- `POST /api/analyses/delete/`
-- `POST /api/interview/start/`
-- `POST /api/interview/evaluate/`
-- `POST /api/interview/finish/`
-- `POST /api/interview/delete/`
-
-All endpoints use a custom JSON body wrapper (`json_endpoint`) that:
-- parses JSON if present
-- returns `400` if JSON is invalid
-- returns `ok: true` on `OPTIONS`
-
-Every endpoint expects JSON input.
-
----
-
-## Core scoring logic (what `backend/api/services.py` actually does)
-
-### Resume parsing & extraction
-1. **Text extraction**
-   - PDF → concatenates page text
-   - DOCX → concatenates paragraphs
-   - Other → UTF-8 decode with ignore errors
-
-2. **Skill extraction** (`extract_skills`)
-   - Uses a large `COMMON_SKILLS` list
-   - Performs regex boundary checks to detect skill phrases in resume/job text
-
-3. **Experience estimation** (`estimate_experience_years`)
-   - Finds patterns like `\d+ years` / `yrs`
-   - Otherwise looks for years like 19xx/20xx and derives a rough range
-
-4. **Education detection** (`detect_education`)
-   - Regex checks for PhD, Master’s, Bachelor’s, Associate, High School
-
-5. **ATS-friendly signal** (`is_ats_friendly`)
-   - Heuristics:
-     - contains “@”
-     - contains section keywords: experience/education/skills/projects/summary
-     - length between 500 and 50,000 chars
-
-### Similarity & scoring
-- Similarity uses:
-  - **TF-IDF vectorizer** (`TfidfVectorizer(stop_words='english', max_features=2000)`)
-  - **cosine similarity**
-
-### Analysis generation (`generate_analysis`)
-Main steps:
-- compute resume skills + job skills
-- determine:
-  - matched keywords (job skills present in resume)
-  - missing keywords
-  - keyword similarity and ATS issues
-- derive scores:
-  - `ats_score`
-  - `skills_score`
-  - `experience_score`
-  - `education_score`
-  - `culture_score`
-- compute combined signals:
-  - `interview_probability`
-  - `negotiation_power_score`
-  - `competitor_percentile`
-  - letter `grade` via thresholds (`score_to_grade`)
-- produce structured output:
-  - `skill_gaps` with `critical/important` labeling
-  - `skill_roadmap` (weeks/resources)
-  - `quick_wins` and `blockers`
-  - salary range based on experience years
-  - cover letter drafts using tone templates
-
-### Interview question generation
-- `build_questions(resume_skills, difficulty, count)`
-  - cycles categories: technical → behavioral → system_design
-  - technical questions substitute `{skill}`
-  - other categories use templates directly
-
-### Interview answer evaluation
-- `evaluate_answer(question_text, user_answer, language)`
-  - relevance = similarity score × 100
-  - completeness = weighted similarity + a tiny length component
-  - communication = based on word count and penalties for very short answers
-  - depth = weighted similarity + structure score
-  - overall = weighted combination of relevance/completeness/communication/depth
-  - grade = `score_to_grade(overall)`
-
-### Interview summary
-- `summarize_interview(...)`
-  - averages metrics from stored answers
-  - returns overall grade + strengths/improvements
-
----
-
-## Supabase integration (how backend reads/writes data)
-
-Backend uses `SupabaseRestClient` inside `services.py`, which:
-- verifies user JWT:
-  - `GET {SUPABASE_URL}/auth/v1/user` with `Authorization: Bearer <token>`
-- reads/writes rows:
-  - `GET/POST/PATCH/DELETE` against `{SUPABASE_URL}/rest/v1/<table>`
-- downloads stored files:
-  - `GET {SUPABASE_URL}/storage/v1/object/resumes/<file_path>`
-- deletes stored files similarly
-
-### Important note about RLS
-The backend chooses headers based on whether an `access_token` is provided:
-- **with access token:** uses anon key + user bearer token
-- **without access token:** uses service role key
-
-In the API endpoints, it always verifies the user and passes `access_token` to Supabase REST calls.
-
----
-
-## Frontend details (how UI calls backend)
-
-### Backend request wrapper
-`frontend/src/lib/backend.ts` implements:
-- `backendPost(path, body)`
-  - `fetch(<VITE_BACKEND_URL> + path)`
-  - JSON body + `X-Client-Source`
-  - throws an error containing `payload.error` when `response.ok` is false
-
-### Server functions
-`frontend/src/serverFns/*` wraps backend calls using `createServerFn` and `zod` validation.
-Examples:
-- `parseResume` → `POST /api/resumes/parse/`
-- `createAnalysis` → `POST /api/analyses/create/`
-- `startInterview`, `evaluateAnswer`, `finishInterview` (similar pattern)
-
----
-
-## Setup (local development)
-
-### Prerequisites
-- **Node.js** (18+) or Bun
-- **Python** (3.10+ recommended)
-- Access to a **Supabase project** (Auth + Postgres + Storage)
-
----
-
-### 1) Run Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend dev server will run on Vite.
-
-### 2) CareerForge AI - Enterprise Resume Analyzer & Job Tracker
+### AI-powered resume analysis, ATS scoring, job tracking & mock interviews
 
 ![Project Banner](frontend/public/images/ai_resume_analysis.png)
 
-CareerForge AI is an enterprise-grade, full-stack application designed to process, evaluate, and structurally enhance professional resumes using deterministic algorithms and Large Language Models (LLMs).
+![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Django](https://img.shields.io/badge/Backend-Django%20REST-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
-## 🚀 Core Capabilities
-
-*   **Precision Document Parsing:** Extracts structured data from raw unstructured PDF and DOCX files with high fidelity, mapping raw text to deterministic data models.
-*   **Deterministic ATS Scoring:** Evaluates resumes using a strict, math-based rubric to calculate compatibility, keyword density, and gap analysis without AI hallucinations.
-*   **AI-Powered Optimization:** Leverages multiple LLM providers (Gemini, Groq, Grok) to rewrite bullet points, strengthen action verbs, and ensure high ATS keyword density.
-*   **Multi-Format Export:** Programmatically compiles optimized data models back into production-ready, beautifully formatted PDF and DOCX binaries.
-*   **Kanban Job Tracker:** An integrated CRM for managing the entire job application lifecycle (Wishlist, Applied, Interviewing, Offered).
-*   **Mock AI Interviewer:** Practice interviews against an AI agent tailored specifically to the contents of your newly optimized resume.
-
-## 🛠️ Technology Stack
-
-**Frontend Architecture:**
-*   **Framework:** React 18 / Vite
-*   **Routing:** TanStack Router
-*   **Styling:** Tailwind CSS + Framer Motion (for smooth, corporate micro-interactions)
-*   **Icons:** Lucide React
-
-**Backend Architecture:**
-*   **Framework:** Django (Python)
-*   **Database & Auth:** Supabase (PostgreSQL, Row Level Security)
-*   **AI Integration:** Multi-provider architecture (Google Gemini 1.5/2.5, Groq, Grok)
-
-## ⚙️ Local Development Setup
-
-### 1. Backend (Django)
-
-```bash
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-.\venv\Scripts\activate  # Windows
-source venv/bin/activate # Mac/Linux
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the local server
-python manage.py runserver 8000
-```
-
-### 2. Frontend (React/Vite)
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run the development server
-npm run dev
-```
-
-The frontend will be available at `http://localhost:8080/`.
-
-## 🧠 AI Provider Configuration
-The system is built to be modular. Users can securely configure their own AI API Keys directly from the Frontend Profile Settings UI. Supported providers include:
-*   **Google Gemini** (gemini-1.5-flash, gemini-2.5-flash, etc.)
-*   **Groq** (llama3-70b-8192, mixtral-8x7b-32768, etc.)
-*   **xAI Grok**
-
-*Note: Default fallbacks are coded for immediate onboarding, but per-user API keys are highly recommended for production scale.*
-
-## 🛡️ License & Deployment
-This system is architected for secure, private document processing. Ensure proper environment variables and Supabase policies are configured before deploying to production (e.g., via Vercel for frontend and Render/Railway for backend).
+</div>
 
 ---
 
-## Environment variables
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [How It Works](#-how-it-works)
+- [API Reference](#-api-reference)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Database Schema](#-database-schema)
+- [AI Provider Configuration](#-ai-provider-configuration)
+- [Troubleshooting](#-troubleshooting)
+- [Deployment](#-deployment)
+- [Author](#-author)
+
+---
+
+## 📌 Overview
+
+**CareerForge AI** is a full-stack web application that processes, evaluates, and improves professional resumes using a combination of **deterministic scoring algorithms** and **Large Language Models (LLMs)**.
+
+Upload a resume, target a job, and get:
+
+- 📊 A **job-targeted resume analysis** (scores, skill gaps, quick wins, salary range, cover letter drafts)
+- 🎤 A **personalized mock interview** generated from your own resume
+- 🧠 An **interview evaluation** with scores, strengths, and areas to improve
+
+---
+
+## ✨ Key Features
+
+| Feature | Description |
+|---|---|
+| 📄 **Precision Document Parsing** | Extracts structured data from PDF and DOCX files and maps raw text to clean data models. |
+| 🎯 **Deterministic ATS Scoring** | Math-based rubric for compatibility, keyword density, and gap analysis, with no AI hallucinations. |
+| 🤖 **AI-Powered Optimization** | Uses multiple LLM providers (Gemini, Groq, Grok) to rewrite bullet points and strengthen action verbs. |
+| 📤 **Multi-Format Export** | Compiles optimized resumes back into production-ready PDF and DOCX files. |
+| 📋 **Kanban Job Tracker** | Manage applications across Wishlist, Applied, Interviewing, and Offered. |
+| 🎙️ **Mock AI Interviewer** | Practice interviews tailored to your resume (technical, behavioral, system design). |
+| ✉️ **Cover Letter Drafts** | Generates professional, conversational, and creative tones. |
+| 🔐 **Secure Auth & Storage** | Supabase Auth with JWT verification, Row Level Security, and private file storage. |
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-Create `frontend/.env`:
-- `VITE_BACKEND_URL=http://localhost:8000` (if backend is not on the default)
-- Supabase client values (required by frontend):
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
+- **Framework:** React 18 + Vite
+- **Routing:** TanStack Router / Server Functions
+- **Styling:** Tailwind CSS + Framer Motion
+- **Icons:** Lucide React
+- **Validation:** Zod
 
-### Backend (`backend/.env`)
-Backend requires at least:
-- `DATABASE_URL` (Supabase Postgres connection string)
+### Backend
+- **Framework:** Django + Django REST Framework
+- **Parsing:** `pypdf`, `python-docx`
+- **ML / Scoring:** scikit-learn (TF-IDF + cosine similarity)
+- **AI Providers:** Google Gemini, Groq, xAI Grok
 
-The backend also reads:
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `CORS_ALLOWED_ORIGINS` (comma-separated; defaults include localhost ports)
-
----
-
-## Expected Supabase tables/fields (inferred from code)
-
-The backend directly queries these tables via Supabase REST:
-- `resumes`
-  - used fields include:
-    - `id`, `user_id`
-    - `file_path`, `parse_status`, `parse_error`
-    - `raw_text`, `extracted_skills`
-    - `total_experience_years`, `education_level`, `word_count`, `is_ats_friendly`
-    - `title` (referenced by interview start response: `resume.get("title")`)
-    - `is_primary`
-
-- `analyses`
-  - used fields include:
-    - `id`, `user_id`, `resume_id`
-    - `status`, `error_message`
-    - job inputs: `job_title`, `company_name`, `location`, `job_description`, `company_description`
-    - scoring output fields (all returned from `generate_analysis`)
-
-- `interview_sessions`
-  - used fields include:
-    - `id`, `user_id`, `resume_id`
-    - `difficulty`, `mode`, `language`, `status`
-    - `total_questions`, `questions`, `answers`
-    - summary fields: `overall_score`, `grade`, `performance_breakdown`, `scores`, `strengths`, `improvements`
-
-If your schema differs, you’ll need to align table names/columns with this code.
+### Data & Infrastructure
+- **Database:** Supabase (PostgreSQL + Row Level Security)
+- **Auth:** Supabase Auth (JWT)
+- **Storage:** Supabase Storage
 
 ---
 
-## Troubleshooting
+## 🏗️ System Architecture
 
-### 1) Backend fails with DATABASE_URL error
-`backend/config/settings.py` hard-fails when `DATABASE_URL` is missing.
-Use Supabase Postgres connection string and ensure it includes `sslmode=require` (or set `sslmode` via query parameters in the URL).
-
-### 2) CORS issues
-Update `CORS_ALLOWED_ORIGINS` in `backend/.env` to include your frontend origin (Vite default is typically `http://localhost:5173`).
-
-### 3) “Resume isn’t parsed yet”
-Call order matters:
-- parse resume first (`/api/resumes/parse/`)
-- then create analysis (`/api/analyses/create/`)
-- then start interview (`/api/interview/start/`)
-
-### 4) Storage permission failures
-Ensure:
-- Supabase Storage bucket permissions allow authenticated users to access their own resume objects (or backend has proper permissions)
-- `resumes` table rows contain correct `file_path` values.
+```mermaid
+flowchart LR
+    A[👤 User] --> B[React + Vite Frontend]
+    B -->|JWT Auth| C[(Supabase Auth)]
+    B -->|Upload Resume| D[(Supabase Storage)]
+    B -->|REST API Calls| E[Django REST Backend]
+    E -->|Verify JWT| C
+    E -->|Download File| D
+    E -->|Read / Write Rows| F[(Supabase Postgres)]
+    E -->|Optional| G[LLM Providers<br/>Gemini · Groq · Grok]
+```
 
 ---
 
-## Deployment notes
-The short proposal file in the repo (`Resume_Analyzer_Proposal_short.md`) describes a deployment approach with:
-- frontend deployed as a Vite build (e.g., Vercel/Netlify)
-- backend hosted anywhere that can run Django (Render/Heroku/container)
-- Supabase used for DB/Auth/Storage
+## 📂 Project Structure
+
+```text
+Resume_Analyzer/
+├── backend/                     # Django REST API + scoring logic
+│   ├── api/
+│   │   ├── views.py             # API endpoints
+│   │   ├── urls.py              # Route mapping
+│   │   └── services.py          # Parsing, scoring & interview logic
+│   ├── config/                  # Django settings, wsgi/asgi
+│   ├── scripts/
+│   │   └── test_api.py          # Quick local integration test
+│   ├── manage.py
+│   └── requirements.txt
+│
+├── frontend/                    # Browser UI
+│   └── src/
+│       ├── serverFns/           # Server functions calling backend endpoints
+│       └── lib/
+│           └── backend.ts       # fetch wrapper: backendPost()
+│
+├── docs/
+├── Resume_Analyzer_Proposal_short.md
+└── README.md
+```
 
 ---
 
-## Quick reference: request bodies
+## 🔄 How It Works
 
-All request bodies are JSON.
+### 1️⃣ Authentication
+The frontend gets a user JWT from **Supabase Auth**. Every backend call includes `accessToken`, and the backend verifies it against Supabase `/auth/v1/user` before touching any data.
 
-### Parse resume
-`POST /api/resumes/parse/`
+### 2️⃣ Resume Upload
+The resume is uploaded to **Supabase Storage**. A row is created in the `resumes` table with a `file_path` pointing to the stored object.
+
+### 3️⃣ Resume Parsing — `POST /api/resumes/parse/`
+The backend downloads the file and extracts text (PDF via `pypdf`, DOCX via `python-docx`, otherwise UTF-8 fallback). It then computes:
+
+- `extracted_skills`: regex match against a large `COMMON_SKILLS` list
+- `total_experience_years`: from "X years" patterns or graduation years
+- `education_level`: PhD, Master's, Bachelor's, etc.
+- `word_count`
+- `is_ats_friendly`: contact info + section keywords + reasonable length
+
+### 4️⃣ Job-Targeted Analysis — `POST /api/analyses/create/`
+Generates ATS, skills, experience, education, and culture-fit scores, plus interview probability, letter grade, matched and missing keywords, skill gaps, a learning roadmap, quick wins, a salary range, and cover letter drafts.
+
+### 5️⃣ Mock Interview — `start → evaluate → finish`
+- **Start:** builds N questions (technical / behavioral / system design) from your skills
+- **Evaluate:** scores each answer on relevance, completeness, communication, and depth using TF-IDF cosine similarity and structure heuristics (STAR-style)
+- **Finish:** returns an overall score, grade, performance breakdown, strengths, and improvements
+
+---
+
+## 📡 API Reference
+
+**Base path:** `/api/` · All endpoints accept **JSON** bodies.
+
+| Method | Endpoint | Description |
+|:---:|---|---|
+| `GET` | `/api/health/` | Health check |
+| `POST` | `/api/resumes/parse/` | Parse an uploaded resume |
+| `POST` | `/api/resumes/delete/` | Delete a resume |
+| `POST` | `/api/resumes/set-primary/` | Set the primary resume |
+| `POST` | `/api/analyses/create/` | Create a job-targeted analysis |
+| `POST` | `/api/analyses/delete/` | Delete an analysis |
+| `POST` | `/api/interview/start/` | Start an interview session |
+| `POST` | `/api/interview/evaluate/` | Evaluate a single answer |
+| `POST` | `/api/interview/finish/` | Finish and summarize the interview |
+| `POST` | `/api/interview/delete/` | Delete an interview session |
+
+<details>
+<summary><b>📥 Example Request Bodies (click to expand)</b></summary>
+
+#### Parse Resume
 ```json
 {
   "accessToken": "<user_jwt>",
@@ -452,8 +183,7 @@ All request bodies are JSON.
 }
 ```
 
-### Create analysis
-`POST /api/analyses/create/`
+#### Create Analysis
 ```json
 {
   "accessToken": "<user_jwt>",
@@ -466,8 +196,7 @@ All request bodies are JSON.
 }
 ```
 
-### Start interview
-`POST /api/interview/start/`
+#### Start Interview
 ```json
 {
   "accessToken": "<user_jwt>",
@@ -478,8 +207,7 @@ All request bodies are JSON.
 }
 ```
 
-### Evaluate answer
-`POST /api/interview/evaluate/`
+#### Evaluate Answer
 ```json
 {
   "accessToken": "<user_jwt>",
@@ -493,8 +221,7 @@ All request bodies are JSON.
 }
 ```
 
-### Finish interview
-`POST /api/interview/finish/`
+#### Finish Interview
 ```json
 {
   "accessToken": "<user_jwt>",
@@ -502,10 +229,180 @@ All request bodies are JSON.
 }
 ```
 
+</details>
+
 ---
 
-## License
-Not specified in the repo. Add a license file if needed for distribution.
+## 🚀 Getting Started
 
-#   R e s u m e _ A n a l y z e r - m a i n 
- 
+### Prerequisites
+
+- **Node.js** 18+ (or Bun)
+- **Python** 3.10+
+- A **Supabase project** (Auth + Postgres + Storage)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/abuhuraira5130/Resume_Analyzer.git
+cd Resume_Analyzer
+```
+
+### 2. Run the Backend (Django)
+
+```bash
+cd backend
+
+# Create and activate a virtual environment
+python -m venv venv
+.\venv\Scripts\activate      # Windows
+source venv/bin/activate     # Mac / Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the server
+python manage.py runserver 8000
+```
+
+### 3. Run the Frontend (React + Vite)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the local URL printed in your terminal (for example `http://localhost:8080` or `http://localhost:5173`).
+
+---
+
+## 🔐 Environment Variables
+
+### Frontend — `frontend/.env`
+
+| Variable | Description |
+|---|---|
+| `VITE_BACKEND_URL` | Backend URL (e.g. `http://localhost:8000`) |
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon public key |
+
+### Backend — `backend/.env`
+
+| Variable | Required | Description |
+|---|:---:|---|
+| `DATABASE_URL` | ✅ | Supabase Postgres connection string (include `sslmode=require`) |
+| `SUPABASE_URL` | ✅ | Supabase project URL |
+| `SUPABASE_ANON_KEY` | ✅ | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (**keep secret**) |
+| `CORS_ALLOWED_ORIGINS` | ➖ | Comma-separated allowed origins |
+
+> ⚠️ **Never commit `.env` files or your service role key to GitHub.**
+
+---
+
+## 🗄️ Database Schema
+
+The backend uses these Supabase tables (inferred from the code):
+
+<details>
+<summary><b>📁 resumes</b></summary>
+
+`id`, `user_id`, `title`, `file_path`, `parse_status`, `parse_error`, `raw_text`, `extracted_skills`, `total_experience_years`, `education_level`, `word_count`, `is_ats_friendly`, `is_primary`
+
+</details>
+
+<details>
+<summary><b>📁 analyses</b></summary>
+
+`id`, `user_id`, `resume_id`, `status`, `error_message`, `job_title`, `company_name`, `location`, `job_description`, `company_description`, plus all scoring output fields from `generate_analysis`
+
+</details>
+
+<details>
+<summary><b>📁 interview_sessions</b></summary>
+
+`id`, `user_id`, `resume_id`, `difficulty`, `mode`, `language`, `status`, `total_questions`, `questions`, `answers`, `overall_score`, `grade`, `performance_breakdown`, `scores`, `strengths`, `improvements`
+
+</details>
+
+> If your schema differs, align the table and column names with the backend code.
+
+---
+
+## 🧠 AI Provider Configuration
+
+The system is modular. Users can securely add their own API keys from the **Profile Settings** page in the frontend.
+
+| Provider | Example Models |
+|---|---|
+| **Google Gemini** | `gemini-1.5-flash`, `gemini-2.5-flash` |
+| **Groq** | `llama3-70b-8192`, `mixtral-8x7b-32768` |
+| **xAI Grok** | Grok models |
+
+> 💡 Default fallbacks exist for quick onboarding, but per-user API keys are recommended for production.
+
+---
+
+## 🩺 Troubleshooting
+
+<details>
+<summary><b>Backend fails with a <code>DATABASE_URL</code> error</b></summary>
+
+`config/settings.py` requires `DATABASE_URL`. Use your Supabase Postgres connection string and make sure it includes `sslmode=require`.
+
+</details>
+
+<details>
+<summary><b>CORS errors in the browser</b></summary>
+
+Add your frontend origin (e.g. `http://localhost:5173` or `http://localhost:8080`) to `CORS_ALLOWED_ORIGINS` in `backend/.env`.
+
+</details>
+
+<details>
+<summary><b>"Resume isn't parsed yet"</b></summary>
+
+Call order matters:
+1. `POST /api/resumes/parse/`
+2. `POST /api/analyses/create/`
+3. `POST /api/interview/start/`
+
+</details>
+
+<details>
+<summary><b>Storage permission failures</b></summary>
+
+- Make sure the Supabase Storage bucket allows authenticated users to access their own resume files.
+- Check that `resumes.file_path` values are correct.
+
+</details>
+
+---
+
+## 🌍 Deployment
+
+| Part | Suggested Platform |
+|---|---|
+| **Frontend** | Vercel / Netlify (Vite build) |
+| **Backend** | Render / Railway / Heroku / Docker |
+| **Database, Auth & Storage** | Supabase |
+
+Before deploying, set all environment variables and review your Supabase **Row Level Security** policies.
+
+---
+
+## 👨‍💻 Author
+
+**Abu Huraira**
+BSAI Student · Full-Stack & AI Developer
+
+[![GitHub](https://img.shields.io/badge/GitHub-abuhuraira5130-181717?style=for-the-badge&logo=github)](https://github.com/abuhuraira5130)
+
+---
+
+<div align="center">
+
+⭐ If you like this project, give it a star!
+
+</div>
