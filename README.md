@@ -1,54 +1,39 @@
 <div align="center">
 
-<img src="assets/hero.svg" width="100%" alt="CareerForge AI - Resume Analyzer and Enhancer" />
+# 🚀 CareerForge AI — Resume Analyzer
 
-<br/>
+### AI-powered resume analysis, ATS scoring, job tracking & mock interviews
 
-[![Status](https://img.shields.io/badge/STATUS-RUNS_LOCALLY-22D3EE?style=for-the-badge)](#-getting-started)
-[![Deployment](https://img.shields.io/badge/LIVE_DEMO-COMING_SOON-3B82F6?style=for-the-badge)](#️-deployment)
-[![PRs Welcome](https://img.shields.io/badge/PRs-WELCOME-10B981?style=for-the-badge)](#-author)
+![Project Banner](frontend/public/images/ai_resume_analysis.png)
 
-![React](https://img.shields.io/badge/React_+_Vite-04080F?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-04080F?style=flat-square&logo=typescript&logoColor=3178C6)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-04080F?style=flat-square&logo=tailwindcss&logoColor=06B6D4)
-![Django](https://img.shields.io/badge/Django_REST-04080F?style=flat-square&logo=django&logoColor=44B78B)
-![Python](https://img.shields.io/badge/Python_3.10+-04080F?style=flat-square&logo=python&logoColor=3776AB)
-![Supabase](https://img.shields.io/badge/Supabase-04080F?style=flat-square&logo=supabase&logoColor=3ECF8E)
-
-<br/>
-
-<a href="#-key-features"><b>✨ Features</b></a>
-&nbsp;•&nbsp;
-<a href="#-how-it-works"><b>⚙️ How It Works</b></a>
-&nbsp;•&nbsp;
-<a href="#-api-reference"><b>📡 API</b></a>
-&nbsp;•&nbsp;
-<a href="#-getting-started"><b>🚀 Get Started</b></a>
+![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Django](https://img.shields.io/badge/Backend-Django%20REST-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
 </div>
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
+---
 
 ## 📑 Table of Contents
 
-- [📌 Overview](#-overview)
-- [📸 Preview](#-preview)
-- [✨ Key Features](#-key-features)
-- [📊 What Gets Scored](#-what-gets-scored)
-- [⚙️ How It Works](#️-how-it-works)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [🏗️ System Architecture](#️-system-architecture)
-- [📂 Project Structure](#-project-structure)
-- [📡 API Reference](#-api-reference)
-- [🚀 Getting Started](#-getting-started)
-- [🔐 Environment Variables](#-environment-variables)
-- [🗄️ Database Schema](#️-database-schema)
-- [🧠 AI Provider Configuration](#-ai-provider-configuration)
-- [🩺 Troubleshooting](#-troubleshooting)
-- [☁️ Deployment](#️-deployment)
-- [👨‍💻 Author](#-author)
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [How It Works](#-how-it-works)
+- [API Reference](#-api-reference)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Database Schema](#-database-schema)
+- [AI Provider Configuration](#-ai-provider-configuration)
+- [Troubleshooting](#-troubleshooting)
+- [Deployment](#-deployment)
+- [Author](#-author)
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
+---
 
 ## 📌 Overview
 
@@ -56,140 +41,46 @@
 
 Upload a resume, target a job, and get:
 
-| 📊 **Job-targeted analysis** | 🎤 **Mock interview** | 🧠 **Interview evaluation** |
-|:---:|:---:|:---:|
-| Scores, skill gaps, quick wins, salary range and cover letter drafts | Questions generated from your own resume and skills | Scores, strengths and improvement tips for every answer |
-
-> 🚧 **Project status:** CareerForge AI currently runs locally and is not deployed yet. Follow [Getting Started](#-getting-started) to run it on your machine, or see [Deployment](#️-deployment) for the hosting plan.
+- 📊 A **job-targeted resume analysis** (scores, skill gaps, quick wins, salary range, cover letter drafts)
+- 🎤 A **personalized mock interview** generated from your own resume
+- 🧠 An **interview evaluation** with scores, strengths, and areas to improve
 
 ---
-
-## 📸 Preview
-
-<div align="center">
-
-<img src="frontend/public/images/ai_resume_analysis.png" width="90%" alt="CareerForge AI preview" />
-
-<br/><br/>
-
-| 📊 Analysis Result | 🎤 Mock Interview | 📋 Job Tracker |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/analysis.png" width="290" alt="Analysis result" /> | <img src="docs/screenshots/interview.png" width="290" alt="Mock interview" /> | <img src="docs/screenshots/tracker.png" width="290" alt="Job tracker" /> |
-
-</div>
-
----
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
 
 ## ✨ Key Features
 
-| | Feature | Description |
-|:---:|---|---|
-| 📄 | **Precision document parsing** | Extracts structured data from PDF and DOCX files and maps raw text to clean data models. |
-| 🎯 | **Deterministic ATS scoring** | A math-based rubric for compatibility, keyword density, and gap analysis, with no AI hallucinations. |
-| 🤖 | **AI-powered optimization** | Uses multiple LLM providers (Gemini, Groq, Grok) to rewrite bullet points and strengthen action verbs. |
-| 📤 | **Multi-format export** | Compiles optimized resumes back into production-ready PDF and DOCX files. |
-| 📋 | **Kanban job tracker** | Manage applications across Wishlist, Applied, Interviewing, and Offered. |
-| 🎙️ | **Mock AI interviewer** | Practice technical, behavioral, and system design interviews tailored to your resume. |
-| ✉️ | **Cover letter drafts** | Generates professional, conversational, and creative tones. |
-| 🔐 | **Secure auth & storage** | Supabase Auth with JWT verification, Row Level Security, and private file storage. |
-
----
-
-## 📊 What Gets Scored
-
-Every analysis produces these signals:
-
-| Signal | What it measures |
+| Feature | Description |
 |---|---|
-| 🎯 **ATS score** | Keyword match and resume structure against the target job |
-| ⚙️ **Skills score** | How many of the job's required skills your resume covers |
-| 💼 **Experience score** | Your experience level against what the role expects |
-| 🎓 **Education score** | Your education level against the role |
-| 🤝 **Culture-fit score** | How well your profile reads for the company |
-| 📈 **Interview probability & grade** | A combined signal turned into a letter grade |
-
-Along with the scores, you get matched and missing keywords, skill gaps (critical or important), a learning roadmap, quick wins, a salary range, and cover letter drafts.
-
----
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
-
-## ⚙️ How It Works
-
-<div align="center">
-
-<img src="assets/pipeline.svg" width="100%" alt="Pipeline: Upload, Parse, Analyze, Interview, Report" />
-
-</div>
-
-<details open>
-<summary><b>1️⃣ Authentication</b></summary>
-<br/>
-
-The frontend gets a user JWT from **Supabase Auth**. Every backend call includes `accessToken`, and the backend verifies it against Supabase `/auth/v1/user` before touching any data.
-
-</details>
-
-<details open>
-<summary><b>2️⃣ Resume upload</b></summary>
-<br/>
-
-The resume is uploaded to **Supabase Storage**, and a row is created in the `resumes` table with a `file_path` pointing to the stored file.
-
-</details>
-
-<details open>
-<summary><b>3️⃣ Resume parsing — <code>POST /api/resumes/parse/</code></b></summary>
-<br/>
-
-The backend downloads the file and extracts text (PDF via `pypdf`, DOCX via `python-docx`, otherwise UTF-8 fallback). It then computes:
-
-- `extracted_skills`: regex match against a large `COMMON_SKILLS` list
-- `total_experience_years`: from "X years" patterns or graduation years
-- `education_level`: PhD, Master's, Bachelor's, etc.
-- `word_count` and `is_ats_friendly`: contact info, section keywords, and reasonable length
-
-</details>
-
-<details open>
-<summary><b>4️⃣ Job-targeted analysis — <code>POST /api/analyses/create/</code></b></summary>
-<br/>
-
-Generates the ATS, skills, experience, education, and culture-fit scores, plus interview probability, letter grade, matched and missing keywords, skill gaps, a learning roadmap, quick wins, a salary range, and cover letter drafts.
-
-</details>
-
-<details open>
-<summary><b>5️⃣ Mock interview — start → evaluate → finish</b></summary>
-<br/>
-
-- **Start:** builds N questions (technical / behavioral / system design) from your skills
-- **Evaluate:** scores each answer on relevance, completeness, communication, and depth using TF-IDF cosine similarity and STAR-style structure heuristics
-- **Finish:** returns an overall score, grade, performance breakdown, strengths, and improvements
-
-</details>
+| 📄 **Precision Document Parsing** | Extracts structured data from PDF and DOCX files and maps raw text to clean data models. |
+| 🎯 **Deterministic ATS Scoring** | Math-based rubric for compatibility, keyword density, and gap analysis, with no AI hallucinations. |
+| 🤖 **AI-Powered Optimization** | Uses multiple LLM providers (Gemini, Groq, Grok) to rewrite bullet points and strengthen action verbs. |
+| 📤 **Multi-Format Export** | Compiles optimized resumes back into production-ready PDF and DOCX files. |
+| 📋 **Kanban Job Tracker** | Manage applications across Wishlist, Applied, Interviewing, and Offered. |
+| 🎙️ **Mock AI Interviewer** | Practice interviews tailored to your resume (technical, behavioral, system design). |
+| ✉️ **Cover Letter Drafts** | Generates professional, conversational, and creative tones. |
+| 🔐 **Secure Auth & Storage** | Supabase Auth with JWT verification, Row Level Security, and private file storage. |
 
 ---
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
 
 ## 🛠️ Tech Stack
 
-<div align="center">
+### Frontend
+- **Framework:** React 18 + Vite
+- **Routing:** TanStack Router / Server Functions
+- **Styling:** Tailwind CSS + Framer Motion
+- **Icons:** Lucide React
+- **Validation:** Zod
 
-<img src="https://skillicons.dev/icons?i=react,vite,ts,tailwind,py,django,postgres,supabase,git,github" alt="Tech stack icons" />
+### Backend
+- **Framework:** Django + Django REST Framework
+- **Parsing:** `pypdf`, `python-docx`
+- **ML / Scoring:** scikit-learn (TF-IDF + cosine similarity)
+- **AI Providers:** Google Gemini, Groq, xAI Grok
 
-</div>
-
-| Layer | Technologies |
-|:---:|---|
-| 🎨 **Frontend** | React 18, Vite, TanStack Router / Server Functions, Tailwind CSS, Framer Motion, Lucide React, Zod |
-| ⚙️ **Backend** | Django, Django REST Framework, `pypdf`, `python-docx` |
-| 🧪 **ML / Scoring** | scikit-learn (TF-IDF + cosine similarity) |
-| 🤖 **AI providers** | Google Gemini, Groq, xAI Grok |
-| 🗄️ **Data & infra** | Supabase (PostgreSQL, Auth, Storage, Row Level Security) |
+### Data & Infrastructure
+- **Database:** Supabase (PostgreSQL + Row Level Security)
+- **Auth:** Supabase Auth (JWT)
+- **Storage:** Supabase Storage
 
 ---
 
@@ -197,31 +88,22 @@ Generates the ATS, skills, experience, education, and culture-fit scores, plus i
 
 ```mermaid
 flowchart LR
-    A[👤 User] --> B[🎨 React + Vite Frontend]
-    B -->|JWT Auth| C[(🔐 Supabase Auth)]
-    B -->|Upload Resume| D[(📦 Supabase Storage)]
-    B -->|REST API Calls| E[⚙️ Django REST Backend]
+    A[👤 User] --> B[React + Vite Frontend]
+    B -->|JWT Auth| C[(Supabase Auth)]
+    B -->|Upload Resume| D[(Supabase Storage)]
+    B -->|REST API Calls| E[Django REST Backend]
     E -->|Verify JWT| C
     E -->|Download File| D
-    E -->|Read / Write Rows| F[(🗄️ Supabase Postgres)]
-    E -.->|Optional| G[🤖 LLM Providers<br/>Gemini · Groq · Grok]
-
-    classDef blue fill:#3B82F6,stroke:#1D4ED8,color:#ffffff;
-    classDef cyan fill:#06B6D4,stroke:#0E7490,color:#ffffff;
-    classDef green fill:#10B981,stroke:#047857,color:#ffffff;
-    class B,E blue;
-    class C,D,F cyan;
-    class G green;
+    E -->|Read / Write Rows| F[(Supabase Postgres)]
+    E -->|Optional| G[LLM Providers<br/>Gemini · Groq · Grok]
 ```
 
 ---
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
-
 ## 📂 Project Structure
 
 ```text
-Resume_Analyzer_And-_Enhancer/
+Resume_Analyzer/
 ├── backend/                     # Django REST API + scoring logic
 │   ├── api/
 │   │   ├── views.py             # API endpoints
@@ -239,16 +121,39 @@ Resume_Analyzer_And-_Enhancer/
 │       └── lib/
 │           └── backend.ts       # fetch wrapper: backendPost()
 │
-├── assets/                      # Animated README graphics (SVG)
 ├── docs/
-│   └── screenshots/             # README images
 ├── Resume_Analyzer_Proposal_short.md
 └── README.md
 ```
 
 ---
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
+## 🔄 How It Works
+
+### 1️⃣ Authentication
+The frontend gets a user JWT from **Supabase Auth**. Every backend call includes `accessToken`, and the backend verifies it against Supabase `/auth/v1/user` before touching any data.
+
+### 2️⃣ Resume Upload
+The resume is uploaded to **Supabase Storage**. A row is created in the `resumes` table with a `file_path` pointing to the stored object.
+
+### 3️⃣ Resume Parsing — `POST /api/resumes/parse/`
+The backend downloads the file and extracts text (PDF via `pypdf`, DOCX via `python-docx`, otherwise UTF-8 fallback). It then computes:
+
+- `extracted_skills`: regex match against a large `COMMON_SKILLS` list
+- `total_experience_years`: from "X years" patterns or graduation years
+- `education_level`: PhD, Master's, Bachelor's, etc.
+- `word_count`
+- `is_ats_friendly`: contact info + section keywords + reasonable length
+
+### 4️⃣ Job-Targeted Analysis — `POST /api/analyses/create/`
+Generates ATS, skills, experience, education, and culture-fit scores, plus interview probability, letter grade, matched and missing keywords, skill gaps, a learning roadmap, quick wins, a salary range, and cover letter drafts.
+
+### 5️⃣ Mock Interview — `start → evaluate → finish`
+- **Start:** builds N questions (technical / behavioral / system design) from your skills
+- **Evaluate:** scores each answer on relevance, completeness, communication, and depth using TF-IDF cosine similarity and structure heuristics (STAR-style)
+- **Finish:** returns an overall score, grade, performance breakdown, strengths, and improvements
+
+---
 
 ## 📡 API Reference
 
@@ -268,7 +173,7 @@ Resume_Analyzer_And-_Enhancer/
 | `POST` | `/api/interview/delete/` | Delete an interview session |
 
 <details>
-<summary><b>📥 Example request bodies (click to expand)</b></summary>
+<summary><b>📥 Example Request Bodies (click to expand)</b></summary>
 
 #### Parse Resume
 ```json
@@ -328,8 +233,6 @@ Resume_Analyzer_And-_Enhancer/
 
 ---
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -338,14 +241,14 @@ Resume_Analyzer_And-_Enhancer/
 - **Python** 3.10+
 - A **Supabase project** (Auth + Postgres + Storage)
 
-### 1️⃣ Clone the repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/abuhuraira5130/Resume_Analyzer_And-_Enhancer.git
-cd Resume_Analyzer_And-_Enhancer
+git clone https://github.com/abuhuraira5130/Resume_Analyzer.git
+cd Resume_Analyzer
 ```
 
-### 2️⃣ Run the backend (Django)
+### 2. Run the Backend (Django)
 
 ```bash
 cd backend
@@ -362,7 +265,7 @@ pip install -r requirements.txt
 python manage.py runserver 8000
 ```
 
-### 3️⃣ Run the frontend (React + Vite)
+### 3. Run the Frontend (React + Vite)
 
 ```bash
 cd frontend
@@ -376,7 +279,7 @@ Open the local URL printed in your terminal (for example `http://localhost:8080`
 
 ## 🔐 Environment Variables
 
-### Frontend: `frontend/.env`
+### Frontend — `frontend/.env`
 
 | Variable | Description |
 |---|---|
@@ -384,7 +287,7 @@ Open the local URL printed in your terminal (for example `http://localhost:8080`
 | `VITE_SUPABASE_URL` | Your Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon public key |
 
-### Backend: `backend/.env`
+### Backend — `backend/.env`
 
 | Variable | Required | Description |
 |---|:---:|---|
@@ -394,11 +297,9 @@ Open the local URL printed in your terminal (for example `http://localhost:8080`
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (**keep secret**) |
 | `CORS_ALLOWED_ORIGINS` | ➖ | Comma-separated allowed origins |
 
-> ⚠️ **Never commit `.env` files, API keys or your service role key to GitHub.**
+> ⚠️ **Never commit `.env` files or your service role key to GitHub.**
 
 ---
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
 
 ## 🗄️ Database Schema
 
@@ -431,15 +332,15 @@ The backend uses these Supabase tables (inferred from the code):
 
 ## 🧠 AI Provider Configuration
 
-The system is modular. Users can add their own API keys from the **Profile Settings** page in the frontend.
+The system is modular. Users can securely add their own API keys from the **Profile Settings** page in the frontend.
 
-| Provider | Example models |
+| Provider | Example Models |
 |---|---|
-| 🟣 **Google Gemini** | `gemini-1.5-flash`, `gemini-2.5-flash` |
-| 🟠 **Groq** | `llama3-70b-8192`, `mixtral-8x7b-32768` |
-| ⚫ **xAI Grok** | Grok models |
+| **Google Gemini** | `gemini-1.5-flash`, `gemini-2.5-flash` |
+| **Groq** | `llama3-70b-8192`, `mixtral-8x7b-32768` |
+| **xAI Grok** | Grok models |
 
-> 💡 Per-user API keys are recommended for production.
+> 💡 Default fallbacks exist for quick onboarding, but per-user API keys are recommended for production.
 
 ---
 
@@ -462,55 +363,46 @@ Add your frontend origin (e.g. `http://localhost:5173` or `http://localhost:8080
 <details>
 <summary><b>"Resume isn't parsed yet"</b></summary>
 
-Call order matters: `parse` → `analyses/create` → `interview/start`.
+Call order matters:
+1. `POST /api/resumes/parse/`
+2. `POST /api/analyses/create/`
+3. `POST /api/interview/start/`
 
 </details>
 
 <details>
 <summary><b>Storage permission failures</b></summary>
 
-Make sure the Supabase Storage bucket allows authenticated users to access their own resume files, and that `resumes.file_path` values are correct.
+- Make sure the Supabase Storage bucket allows authenticated users to access their own resume files.
+- Check that `resumes.file_path` values are correct.
 
 </details>
 
 ---
 
-<img src="assets/divider.svg" width="100%" alt="divider" />
+## 🌍 Deployment
 
-## ☁️ Deployment
-
-CareerForge AI is not deployed yet. The planned hosting setup:
-
-| Part | Platform |
+| Part | Suggested Platform |
 |---|---|
-| 🎨 **Frontend** | Vercel / Netlify (Vite build) |
-| ⚙️ **Backend** | Render / Railway / Docker |
-| 🗄️ **Database, Auth & Storage** | Supabase |
+| **Frontend** | Vercel / Netlify (Vite build) |
+| **Backend** | Render / Railway / Heroku / Docker |
+| **Database, Auth & Storage** | Supabase |
 
 Before deploying, set all environment variables and review your Supabase **Row Level Security** policies.
 
-- [x] Resume parsing, ATS scoring and mock interviews
-- [x] Supabase auth, storage and database integration
-- [ ] Public live demo
-
 ---
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
 
 ## 👨‍💻 Author
 
+**Abu Huraira**
+BSAI Student · Full-Stack & AI Developer
+
+[![GitHub](https://img.shields.io/badge/GitHub-abuhuraira5130-181717?style=for-the-badge&logo=github)](https://github.com/abuhuraira5130)
+
+---
+
 <div align="center">
 
-### **Abu Huraira**
-*Full Stack Developer · AI/ML Engineer · BS AI Student*
-
-[![GitHub](https://img.shields.io/badge/GitHub-abuhuraira5130-04080F?style=for-the-badge&logo=github)](https://github.com/abuhuraira5130)
-[![Portfolio](https://img.shields.io/badge/Portfolio-huraira--labs.vercel.app-22D3EE?style=for-the-badge)](https://huraira-labs.vercel.app/)
-
-<br/>
-
-⭐ **If CareerForge AI helps you, give it a star!** ⭐
-
-<img src="assets/divider.svg" width="100%" alt="divider" />
+⭐ If you like this project, give it a star!
 
 </div>
