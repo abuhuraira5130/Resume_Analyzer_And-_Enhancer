@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="230" viewBox="0 0 1100 230" role="img" aria-label="Analysis pipeline: Upload, Parse, Analyze, Interview, Report">
+  <defs>
+    <linearGradient id="cy" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="0.5" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="card"><rect width="1100" height="230" rx="18"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#card)">
+    <rect width="1100" height="230" fill="#05101F"/>
+
+    <text x="40" y="38" font-family="Consolas,'Courier New',monospace" font-size="13" letter-spacing="4" fill="#3B82F6">ANALYSIS PIPELINE</text>
+
+    <!-- track -->
+    <path d="M110 105H990" stroke="url(#cy)" stroke-width="3" opacity="0.35"/>
+    <path d="M110 105H990" stroke="#22D3EE" stroke-width="2" stroke-dasharray="6 8" opacity="0.8">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- ripples -->
+    <circle cx="110" cy="105" r="30" fill="none" stroke="#22D3EE" stroke-width="2"><animate attributeName="r" values="30;58;58" keyTimes="0;0.2;1" dur="5s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0;0" keyTimes="0;0.2;1" dur="5s" begin="0s" repeatCount="indefinite"/></circle>
+    <circle cx="330" cy="105" r="30" fill="none" stroke="#22D3EE" stroke-width="2"><animate attributeName="r" values="30;58;58" keyTimes="0;0.2;1" dur="5s" begin="1.25s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0;0" keyTimes="0;0.2;1" dur="5s" begin="1.25s" repeatCount="indefinite"/></circle>
+    <circle cx="550" cy="105" r="30" fill="none" stroke="#22D3EE" stroke-width="2"><animate attributeName="r" values="30;58;58" keyTimes="0;0.2;1" dur="5s" begin="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0;0" keyTimes="0;0.2;1" dur="5s" begin="2.5s" repeatCount="indefinite"/></circle>
+    <circle cx="770" cy="105" r="30" fill="none" stroke="#22D3EE" stroke-width="2"><animate attributeName="r" values="30;58;58" keyTimes="0;0.2;1" dur="5s" begin="3.75s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0;0" keyTimes="0;0.2;1" dur="5s" begin="3.75s" repeatCount="indefinite"/></circle>
+    <circle cx="990" cy="105" r="30" fill="none" stroke="#34D399" stroke-width="2"><animate attributeName="r" values="30;58;58" keyTimes="0;0.2;1" dur="5s" begin="5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0;0" keyTimes="0;0.2;1" dur="5s" begin="5s" repeatCount="indefinite"/></circle>
+
+    <!-- nodes -->
+    <g font-family="Consolas,'Courier New',monospace" text-anchor="middle">
+      <circle cx="110" cy="105" r="30" fill="#07142A" stroke="url(#cy)" stroke-width="2.5"/>
+      <text x="110" y="111" font-size="18" font-weight="700" fill="#67E8F9">01</text>
+      <circle cx="330" cy="105" r="30" fill="#07142A" stroke="url(#cy)" stroke-width="2.5"/>
+      <text x="330" y="111" font-size="18" font-weight="700" fill="#67E8F9">02</text>
+      <circle cx="550" cy="105" r="30" fill="#07142A" stroke="url(#cy)" stroke-width="2.5"/>
+      <text x="550" y="111" font-size="18" font-weight="700" fill="#67E8F9">03</text>
+      <circle cx="770" cy="105" r="30" fill="#07142A" stroke="url(#cy)" stroke-width="2.5"/>
+      <text x="770" y="111" font-size="18" font-weight="700" fill="#67E8F9">04</text>
+      <circle cx="990" cy="105" r="30" fill="#07142A" stroke="url(#cy)" stroke-width="2.5"/>
+      <text x="990" y="111" font-size="18" font-weight="700" fill="#34D399">05</text>
+    </g>
+
+    <!-- labels -->
+    <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" text-anchor="middle">
+      <text x="110" y="165" font-size="15" font-weight="700" letter-spacing="3" fill="#E0F2FE">UPLOAD</text>
+      <text x="110" y="187" font-size="12" fill="#7C9CC4">PDF / DOCX</text>
+      <text x="330" y="165" font-size="15" font-weight="700" letter-spacing="3" fill="#E0F2FE">PARSE</text>
+      <text x="330" y="187" font-size="12" fill="#7C9CC4">skills, experience, education</text>
+      <text x="550" y="165" font-size="15" font-weight="700" letter-spacing="3" fill="#E0F2FE">ANALYZE</text>
+      <text x="550" y="187" font-size="12" fill="#7C9CC4">ATS, gaps, salary, cover letters</text>
+      <text x="770" y="165" font-size="15" font-weight="700" letter-spacing="3" fill="#E0F2FE">INTERVIEW</text>
+      <text x="770" y="187" font-size="12" fill="#7C9CC4">AI questions and answer scoring</text>
+      <text x="990" y="165" font-size="15" font-weight="700" letter-spacing="3" fill="#E0F2FE">REPORT</text>
+      <text x="990" y="187" font-size="12" fill="#7C9CC4">grade, strengths, improvements</text>
+    </g>
+
+    <!-- travelling pulse -->
+    <circle r="6" fill="#67E8F9" filter="url(#glow)">
+      <animateMotion dur="5s" repeatCount="indefinite" path="M110 105H990"/>
+    </circle>
+  </g>
+
+  <rect x="1" y="1" width="1098" height="228" rx="18" fill="none" stroke="url(#cy)" stroke-width="2"/>
+</svg>
